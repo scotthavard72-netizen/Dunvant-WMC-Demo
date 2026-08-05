@@ -25,7 +25,8 @@
     --brass:#d4a45c; --brass-light:#e8c584; --forest:#4a6b5f;
   --pop:#ff9166;
   }
-  body{transition:background 0.25s ease, color 0.25s ease;}
+  body{transition:background 0.25s ease, color 0.25s ease, opacity 0.2s ease; opacity:0;}
+  body.loaded{opacity:1;}
   *, *::before, *::after{transition:background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;}
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -37,6 +38,11 @@
   }
   .display{font-family:'Fraunces', serif;}
   .card{max-width:420px; width:100%; text-align:center;}
+  .homepage-link{
+    display:block; text-align:center; font-family:'Inter', sans-serif; font-size:0.8rem; font-weight:600;
+    color:rgba(255,255,255,0.6); text-decoration:none; margin-bottom:16px;
+  }
+  .homepage-link:hover{color:var(--brass-light);}
 
   #progress-bar{
     position:fixed; top:0; left:0; height:3px; width:0%;
@@ -81,17 +87,6 @@
   }
   button.enter:hover{transform:translateY(-2px);}
   .error{font-size:0.8rem; color:#e08a7d; margin-top:12px; display:none;}
-
-  .quick-login{margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.12);}
-  .quick-login-label{font-size:0.78rem; color:rgba(255,255,255,0.55); margin-bottom:10px;}
-  .quick-login-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
-  .quick-btn{
-    font-family:'Inter', sans-serif; font-size:0.82rem; font-weight:600;
-    background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.85);
-    border:1px solid rgba(255,255,255,0.18); border-radius:8px;
-    padding:12px 8px; cursor:pointer; transition:border-color 0.15s ease;
-  }
-  .quick-btn:hover{border-color:var(--brass);}
 
   .menu a{
     display:block; text-decoration:none; background:var(--card); color:var(--ink);
@@ -196,17 +191,9 @@
     cursor:pointer; font-size:1.05rem;
   }
   .theme-toggle:hover{border-color:var(--brass-light);}
-
-  .demo-banner{
-    background:#7a3b2e; color:#fff; text-align:center; padding:8px 16px;
-    font-family:'Inter', sans-serif; font-size:0.78rem; font-weight:600;
-    position:sticky; top:0; z-index:9999;
-  }
 </style>
 </head>
 <body>
-<div class="demo-banner">🧪 DEMO — for trying things out and giving feedback. No real data, nothing here connects to the real club, nothing is saved anywhere.</div>
-
 <div id="progress-bar"></div>
 
 <div class="status-banner offline-style" id="offline-banner">
@@ -216,6 +203,7 @@
 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode"><span id="theme-icon">☀️</span></button>
 
 
+<a class="homepage-link" href="club-website.html" id="homepage-link">← Back to Homepage</a>
 <div class="card">
 
   <!-- Screen: login -->
@@ -228,17 +216,6 @@
     <button class="enter" onclick="attemptLogin()">Sign In</button>
     <p class="error" id="login-error">Username or password not recognised</p>
     <p class="note">Don't have a login? Ask Site Admin to add you.</p>
-
-    <div class="quick-login">
-      <p class="quick-login-label">Tap a role — no login needed:</p>
-      <div class="quick-login-grid">
-        <button class="quick-btn" onclick="quickDemo('demo-bar')">Bar Staff</button>
-        <button class="quick-btn" onclick="quickDemo('demo-keyholder')">Keyholder</button>
-        <button class="quick-btn" onclick="quickDemo('demo-mgmt')">Management</button>
-        <button class="quick-btn" onclick="quickDemo('demo-committee')">Committee</button>
-        <button class="quick-btn" onclick="quickDemo('demo-admin')">Site Admin</button>
-      </div>
-    </div>
     <button class="enter" id="install-btn" style="display:none; margin-top:14px; background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.25);" onclick="installApp()">📲 Install App</button>
     <p class="note" id="ios-install-note" style="display:none;">On iPhone: tap Share → Add to Home Screen to install.</p>
   </div>
@@ -267,18 +244,39 @@
   // sign-off-on-close listener further down doesn't treat it as a real close.
   let intentionalNavigation = false;
 
+  // Smooth fade in/out when moving between Staff Area and the public homepage
+  requestAnimationFrame(() => document.body.classList.add('loaded'));
+  document.addEventListener('DOMContentLoaded', () => {
+    const homepageLink = document.getElementById('homepage-link');
+    if(homepageLink){
+      homepageLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        intentionalNavigation = true;
+        document.body.classList.remove('loaded');
+        setTimeout(() => { window.location.href = homepageLink.href; }, 200);
+      });
+    }
+  });
+
   // ── Staff login list ──
   // Site Admin: add, remove, or edit people here. Each person needs a unique
   // username, a password, their display name, and a list of roles
   // (from: "bar", "keyholder", "mgmt", "admin", "committee").
   // Most people have one role; a few have more than one.
-  // ── DEMO staff list — fictional people, not real club staff ──
   const STAFF_USERS = [
-    { username: "demo-bar",       password: "demo", name: "Demo Bar Staff",  roles: ["bar"] },
-    { username: "demo-keyholder", password: "demo", name: "Demo Keyholder",  roles: ["keyholder"] },
-    { username: "demo-mgmt",      password: "demo", name: "Demo Management", roles: ["mgmt"] },
-    { username: "demo-committee", password: "demo", name: "Demo Committee",  roles: ["mgmt", "committee"] },
-    { username: "demo-admin",     password: "demo", name: "Demo Site Admin", roles: ["admin"] }
+    { username: "carol",   password: "lovely",     name: "Carol",   roles: ["committee", "mgmt"] },
+    { username: "tim",     password: "walter",     name: "Tim",     roles: ["mgmt"] },
+    { username: "hayley",  password: "gnome",      name: "Hayley",  roles: ["bar"] },
+    { username: "mark",    password: "angelic",    name: "Mark",    roles: ["mgmt"] },
+    { username: "amy",     password: "old",        name: "Amy",     roles: ["keyholder"] },
+    { username: "charley", password: "moody",      name: "Charley", roles: ["keyholder"] },
+    { username: "jack",    password: "spastic",    name: "Jack",    roles: ["bar"] },
+    { username: "penny",   password: "ocd",        name: "Penny",   roles: ["bar"] },
+    { username: "rach",    password: "theboss",    name: "Rach",    roles: ["mgmt", "committee"] },
+    { username: "sally",   password: "smart",      name: "Sally",   roles: ["keyholder"] },
+    { username: "scott",   password: "scotthav88", name: "Scott", roles: ["admin"] },
+    { username: "euan",    password: "windup",     name: "Euan",    roles: ["bar"] },
+    { username: "kelly",   password: "rosa",       name: "Kelly",   roles: ["keyholder"] }
   ];
 
   // ── Menus per role ──
@@ -599,16 +597,6 @@
       }
       label.classList.toggle('hidden', !anyVisible);
     });
-  }
-
-  function quickDemo(username){
-    const user = STAFF_USERS.find(u => u.username === username);
-    if(user){
-      localStorage.setItem('staffUser', user.username);
-      localStorage.setItem('staffUserName', user.name);
-      localStorage.setItem('staffUserRoles', JSON.stringify(user.roles));
-      renderMenu(user);
-    }
   }
 
   function attemptLogin(){
