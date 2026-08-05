@@ -48,7 +48,8 @@
     --band-forest:#1c2620;
     --band-brass:#2a2318;
   }
-  body{transition:background 0.25s ease, color 0.25s ease;}
+  body{transition:background 0.25s ease, color 0.25s ease, opacity 0.2s ease; opacity:0;}
+  body.loaded{opacity:1;}
   * , *::before, *::after{transition:background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;}
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
@@ -592,17 +593,9 @@
   @media(prefers-reduced-motion:reduce){
     .reveal{opacity:1; transform:none; transition:none;}
   }
-
-  .demo-banner{
-    background:#7a3b2e; color:#fff; text-align:center; padding:8px 16px;
-    font-family:'Inter', sans-serif; font-size:0.78rem; font-weight:600;
-    position:sticky; top:0; z-index:9999;
-  }
 </style>
 </head>
 <body>
-<div class="demo-banner">🧪 DEMO — for trying things out and giving feedback. No real data, nothing here connects to the real club, nothing is saved anywhere.</div>
-
 <div id="maintenance-overlay" style="display:none; position:fixed; inset:0; z-index:9999; background:#181614; color:#fff; align-items:center; justify-content:center; text-align:center; padding:24px; flex-direction:column; font-family:'Inter', sans-serif;">
   <div style="font-family:'Fraunces', serif; font-size:1.6rem; font-weight:600; margin-bottom:12px;">Dunvant Workingmens Club</div>
   <p id="maintenance-message" style="max-width:400px; color:rgba(255,255,255,0.7); line-height:1.6;"></p>
@@ -615,7 +608,7 @@
     <a href="#book">Book</a>
     <a href="#gallery">Gallery</a>
     <a href="#members">Members</a>
-    <a href="staff-area.html" class="staff-link">Staff</a>
+    <a href="staff-area.html" class="staff-link" id="staff-nav-link">Staff</a>
   </nav>
   <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
     <span class="theme-icon" id="theme-icon">☀️</span>
@@ -731,7 +724,7 @@
       <div><strong>4 weeks</strong>notice for Saturdays</div>
       <div><strong>£40</strong>deposit</div>
     </div>
-    <a class="btn btn-light" href="javascript:alert('Demo mode — this would normally open the real form.')" target="_blank" rel="noopener">Go to Booking Form</a>
+    <a class="btn btn-light" href="https://forms.cloud.microsoft/r/xPbfry03VW" target="_blank" rel="noopener">Go to Booking Form</a>
   </div>
 </section>
 
@@ -859,7 +852,7 @@
   <div class="members-card">
     <p>Stay in the loop with what's happening at the club.</p>
     <ul>
-      <li>Follow us on <a href="javascript:alert('Demo mode — this would normally open the real Facebook page.')" target="_blank" rel="noopener" style="color:var(--brass); font-weight:600;">Facebook</a> for updates</li>
+      <li>Follow us on <a href="https://www.facebook.com/profile.php?id=61563877044858" target="_blank" rel="noopener" style="color:var(--brass); font-weight:600;">Facebook</a> for updates</li>
       <li>Not a member yet? Ask at the bar about joining.</li>
       <li>Membership lapsed? See <a href="membership-renewal.html" style="color:var(--brass); font-weight:600;">how to renew</a></li>
       <li>Got an idea for the club? <a href="member-suggestions.html" style="color:var(--brass); font-weight:600;">Let us know</a></li>
@@ -869,11 +862,24 @@
 
 <footer>
   <p>Dunvant Workingmens Club — built and maintained by the committee</p>
-  <p style="margin-top:10px;"><a href="javascript:alert('Demo mode — this would normally open the real Facebook page.')" target="_blank" rel="noopener" style="color:var(--brass); text-decoration:none; font-weight:600;">Find us on Facebook →</a></p>
-  <p style="margin-top:6px;"><a href="javascript:alert('Demo mode — this would normally open your email app.')" style="color:var(--muted); text-decoration:none; font-size:0.78rem;">Spotted a problem with this website? Let us know →</a></p>
+  <p style="margin-top:10px;"><a href="https://www.facebook.com/profile.php?id=61563877044858" target="_blank" rel="noopener" style="color:var(--brass); text-decoration:none; font-weight:600;">Find us on Facebook →</a></p>
+  <p style="margin-top:6px;"><a href="mailto:dunvantclub@outlook.com?subject=Website%20issue" style="color:var(--muted); text-decoration:none; font-size:0.78rem;">Spotted a problem with this website? Let us know →</a></p>
 </footer>
 
 <script>
+  // Smooth fade in/out when moving between the public homepage and Staff Area
+  requestAnimationFrame(() => document.body.classList.add('loaded'));
+  document.addEventListener('DOMContentLoaded', () => {
+    const staffLink = document.getElementById('staff-nav-link');
+    if(staffLink){
+      staffLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.body.classList.remove('loaded');
+        setTimeout(() => { window.location.href = staffLink.href; }, 200);
+      });
+    }
+  });
+
   // Maintenance mode — checks the shared toggle file. A ?preview=1 link (used
   // automatically from Full Admin Dashboard) bypasses it for Site Admin.
   (async function checkMaintenanceMode(){
